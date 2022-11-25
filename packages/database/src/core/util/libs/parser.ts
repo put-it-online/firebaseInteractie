@@ -116,6 +116,7 @@ export const parseURL = function(
 ): {
   host: string;
   port: number;
+  topLevelDomain: string;
   domain: string;
   subdomain: string;
   secure: boolean;
@@ -124,6 +125,7 @@ export const parseURL = function(
 } {
   // Default to empty strings in the event of a malformed string.
   let host = '',
+    topLevelDomain = '',
     domain = '',
     subdomain = '',
     pathString = '';
@@ -170,10 +172,16 @@ export const parseURL = function(
     }
 
     const parts = host.split('.');
-    if (parts.length === 3) {
+    if (parts.length === 4) {
+      // Normalize namespaces to lowercase to share storage / connection.
+      domain = parts[2];
+      subdomain = parts[0].toLowerCase() + '.' + parts[1].toLowerCase();
+      topLevelDomain = parts[3];
+    } else if (parts.length === 3) {
       // Normalize namespaces to lowercase to share storage / connection.
       domain = parts[1];
       subdomain = parts[0].toLowerCase();
+      topLevelDomain = parts[2];
     } else if (parts.length === 2) {
       domain = parts[0];
     } else if (parts[0].slice(0, colonInd).toLowerCase() === 'localhost') {
@@ -185,9 +193,11 @@ export const parseURL = function(
     }
   }
 
+
   return {
     host,
     port,
+    topLevelDomain,
     domain,
     subdomain,
     secure,
